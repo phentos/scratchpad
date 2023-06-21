@@ -1,4 +1,4 @@
-class ScratchPad {
+export class ScratchPad {
   constructor(canvasElement) {
     this.canvas = canvasElement;
     this.context = canvasElement.getContext('2d');
@@ -10,10 +10,10 @@ class ScratchPad {
   
   startup() {    
     const eventHandlers = [
-      ["touchstart", handleStart],
-      ["touchend", handleEnd],
-      ["touchcancel", handleCancel],
-      ["touchmove", handleMove]
+      ["touchstart", this.handleStart],
+      ["touchend", this.handleEnd],
+      ["touchcancel", this.handleCancel],
+      ["touchmove", this.handleMove]
     ];
     
     eventHandlers.forEach((eventHandler) => {
