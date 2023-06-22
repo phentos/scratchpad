@@ -1,11 +1,26 @@
 const ongoingTouches = [];
+
 const penColor = "#000";
+let penWidth = 4;
+
 const vvp = window.visualViewport;
 
 document.addEventListener("DOMContentLoaded", () => {
 	activateTouchHandlers();
+	activateUIHandlers();
 	activateViewportHandler();
 });
+
+function activateUIHandlers() {
+  document.querySelector("#increase").addEventListener('touchstart', () => {
+    penWidth = penWidth + 2;
+  });
+  
+  document.querySelector("#decrease").addEventListener('touchstart', () => {
+    penWidth = penWidth - 2;
+    penWidth = (penWidth > 0) ? penWidth : 1;
+  });
+}
 
 function updateCanvasSize() {
   const canvas = getCanvas();
@@ -64,7 +79,7 @@ function handleMove(event) {
 			ctx.beginPath();
 			ctx.moveTo(ongoingTouches[touchIndex].pageX, ongoingTouches[touchIndex].pageY);
 			ctx.lineTo(touch.pageX, touch.pageY);
-			ctx.lineWidth = 4;
+			ctx.lineWidth = penWidth;
 			ctx.strokeStyle = "#000";
 			ctx.stroke();
 
@@ -87,7 +102,7 @@ function handleEnd(event) {
 		let touchIndex = ongoingTouchIndexById(touch.identifier);
 
 		if (touchIndex != -1) {
-			ctx.lineWidth = 4;
+			ctx.lineWidth = penWidth;
 			ctx.fillStyle = "#000";
 			ctx.beginPath();
 			ctx.moveTo(ongoingTouches[touchIndex].pageX, ongoingTouches[touchIndex].pageY);
