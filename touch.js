@@ -1,6 +1,6 @@
 const ongoingTouches = [];
 
-const penColor = "#000";
+let penColor = "#000";
 let penWidth = 4;
 
 const vvp = window.visualViewport;
@@ -11,15 +11,14 @@ document.addEventListener("DOMContentLoaded", () => {
 	activateViewportHandler();
 });
 
-function activateUIHandlers() {
-  document.querySelector("#increase").addEventListener('touchstart', () => {
-    penWidth = penWidth + 2;
-  });
-  
-  document.querySelector("#decrease").addEventListener('touchstart', () => {
-    penWidth = penWidth - 2;
-    penWidth = (penWidth > 0) ? penWidth : 1;
-  });
+function activateUIHandlers() {  
+  document.querySelector("#penSizeSlider").addEventListener('input', (event) => {
+    updatePenSize(event.target.value);
+  })
+}
+
+function updatePenSize(value) {
+  penWidth = Math.max(value, 1);
 }
 
 function updateCanvasSize() {
@@ -35,14 +34,14 @@ function activateViewportHandler() {
 }
 
 function activateTouchHandlers() {
-	const eventHandlers = [
+	const touchEventHandlers = [
 		["touchstart", handleStart],
 		["touchend", handleEnd],
     ["touchcancel", handleCancel],
     ["touchmove", handleMove]
 	];
 	
-	eventHandlers.forEach((eventHandler) => {
+	touchEventHandlers.forEach((eventHandler) => {
 		getCanvas().addEventListener(eventHandler[0], eventHandler[1]);
 	});
 }
@@ -57,10 +56,6 @@ function handleStart(event) {
 		let touch = touches[i];
 		
 		ongoingTouches.push(copyTouch(touch));
-		
-		ctx.beginPath();
-		ctx.fillStyle = "black";
-		ctx.fill();
 	};
 }
 
@@ -80,7 +75,7 @@ function handleMove(event) {
 			ctx.moveTo(ongoingTouches[touchIndex].pageX, ongoingTouches[touchIndex].pageY);
 			ctx.lineTo(touch.pageX, touch.pageY);
 			ctx.lineWidth = penWidth;
-			ctx.strokeStyle = "#000";
+			ctx.strokeStyle = penColor;
 			ctx.stroke();
 
 		  // not splicing draws from origin to all moves,
@@ -103,7 +98,7 @@ function handleEnd(event) {
 
 		if (touchIndex != -1) {
 			ctx.lineWidth = penWidth;
-			ctx.fillStyle = "#000";
+			ctx.fillStyle = penColor;
 			ctx.beginPath();
 			ctx.moveTo(ongoingTouches[touchIndex].pageX, ongoingTouches[touchIndex].pageY);
 			ctx.lineTo(touch.pageX, touch.pageY);
@@ -112,13 +107,13 @@ function handleEnd(event) {
 	}
 }
 
-function handleCancel(evt) {
-	evt.preventDefault();
-	const touches = evt.changedTouches;
+function handleCancel(event) {
+	event.preventDefault();
+	const touches = event.changedTouches;
 
 	for (let i = 0; i < touches.length; i++) {
-		let idx = ongoingTouchIndexById(touches[i].identifier);
-		ongoingTouches.splice(idx, 1); // remove it; we're done
+		let touchIndex = ongoingTouchIndexById(touches[i].identifier);
+		ongoingTouches.splice(touchIndex, 1); // remove it; we're done
 	}
 }
 
@@ -132,10 +127,6 @@ function ongoingTouchIndexById(idToFind) {
 	return -1; // not found
 }
 
-function colorForTouch(touch) {
-	return "#000";
-}
-
 function copyTouch({ identifier, pageX, pageY }) {
   return { identifier, pageX, pageY };
 }
@@ -146,4 +137,8 @@ function getCanvas(){
 
 function getCanvasContext(){
 	return getCanvas().getContext('2d');
+}
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max)
 }
