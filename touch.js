@@ -1,12 +1,22 @@
 const ongoingTouches = [];
+const penColor = "#000";
+const vvp = window.visualViewport;
 
 document.addEventListener("DOMContentLoaded", () => {
-	startup();
+	activateTouchHandlers();
+	activateViewportHandler();
 });
 
-function startup() {
-  // createCanvas();
-  activateTouchHandlers();
+function updateCanvasSize() {
+  const canvas = getCanvas();
+  
+  canvas.setAttribute('width', vvp.width);
+  canvas.setAttribute('height', vvp.height);
+}
+
+function activateViewportHandler() {
+  updateCanvasSize();
+  vvp.addEventListener("resize", updateCanvasSize);
 }
 
 function activateTouchHandlers() {
@@ -34,7 +44,7 @@ function handleStart(event) {
 		ongoingTouches.push(copyTouch(touch));
 		
 		ctx.beginPath();
-		ctx.fillStyle = "#000";
+		ctx.fillStyle = "black";
 		ctx.fill();
 	};
 }
@@ -65,24 +75,24 @@ function handleMove(event) {
 	}
 }
 
-function handleEnd(evt) {
-	evt.preventDefault();
+function handleEnd(event) {
+	event.preventDefault();
 	
-	const el = document.getElementById("canvas");
-	const ctx = el.getContext("2d");
-	const touches = evt.changedTouches;
+	const ctx = getCanvasContext();
+	const touches = event.changedTouches;
 
 	for (let i = 0; i < touches.length; i++) {
-		const color = colorForTouch(touches[i]);
-		let idx = ongoingTouchIndexById(touches[i].identifier);
+	  let touch = touches[i];
 
-		if (idx >= 0) {
+		let touchIndex = ongoingTouchIndexById(touch.identifier);
+
+		if (touchIndex != -1) {
 			ctx.lineWidth = 4;
-			ctx.fillStyle = color;
+			ctx.fillStyle = "#000";
 			ctx.beginPath();
-			ctx.moveTo(ongoingTouches[idx].pageX, ongoingTouches[idx].pageY);
-			ctx.lineTo(touches[i].pageX, touches[i].pageY);
-			ongoingTouches.splice(idx, 1); // remove it; we're done
+			ctx.moveTo(ongoingTouches[touchIndex].pageX, ongoingTouches[touchIndex].pageY);
+			ctx.lineTo(touch.pageX, touch.pageY);
+			ongoingTouches.splice(touchIndex, 1);
 		}
 	}
 }
