@@ -2,7 +2,8 @@ const ongoingTouches = [];
 
 let penColor = "black";
 let penSize = 4;
-let penMode = flat;
+let penMode = round;
+let brushOrigin;
 
 const vvp = window.visualViewport;
 const canvas = document.querySelector('#canvas');
@@ -21,10 +22,20 @@ function activateUIHandlers() {
   
   document.querySelector("#flatSelect").addEventListener('input', () => {
   	penMode = flat;
+  	penSize = 20;
   });
   
   document.querySelector("#roundSelect").addEventListener('input', () => {
   	penMode = round;
+  });
+  
+  document.querySelector("#fanSelect").addEventListener('input', () => {
+  	penMode = fan;
+  	penSize = 40;
+  });
+  
+  document.querySelector('#clear').addEventListener('input', () => {
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
   });
 }
 
@@ -49,13 +60,14 @@ function activateTouchHandlers() {
 	];
 	
 	touchEventHandlers.forEach((eventHandler) => {
-		canvas.addEventListener(eventHandler[0], eventHandler[1]);
+		canvas.addEventListener(eventHandler[0], (event) => {
+			event.preventDefault();
+			eventHandler[1](event);
+		});
 	});
 }
 
 function handleStart(event) {
-	event.preventDefault();
-
 	const touches = event.changedTouches;
 
 	for (let i = 0; i < touches.length; i++) {
@@ -67,9 +79,7 @@ function handleStart(event) {
 	}
 }
 
-function handleMove(event) {
-	event.preventDefault();
-	
+function handleMove(event) {	
 	const touches = event.changedTouches;
 
 	for (let i = 0; i < touches.length; i++) {
@@ -88,8 +98,6 @@ function handleMove(event) {
 }
 
 function handleEnd(event) {
-	event.preventDefault();
-
 	const touches = event.changedTouches;
 
 	for (let i = 0; i < touches.length; i++) {
@@ -106,11 +114,11 @@ function handleEnd(event) {
 }
 
 function handleCancel(event) {
-	event.preventDefault();
 	const touches = event.changedTouches;
 
 	for (let i = 0; i < touches.length; i++) {
 		const touchIndex = ongoingTouchIndexById(touches[i].identifier);
+		
 		ongoingTouches.splice(touchIndex, 1); // remove it; we're done
 	}
 }
@@ -144,6 +152,22 @@ function flat(touch, touchIndex) {
 	ctx.lineWidth = penSize;
 	ctx.strokeStyle = penColor;
 	ctx.stroke();
+	
+	// not splicing draws from origin to all moves,
+	// potential feature!
+	ongoingTouches.splice(touchIndex, 1, copyTouch(touch));
+}
+
+// fan currently behaves identically to flat
+function fan(touch, touchIndex) {
+	ctx.beginPath();
+	ctx.moveTo(brushOrigin[0], brushOrigin[1]);
+	ctx.lineTo(touch.pageX, touch.pageY);
+	ctx.lineWidth = penSize;
+	ctx.strokeStyle = penColor;
+	ctx.stroke();
+	
+	ongoingTouches.splice(touchIndex, 1, copyTouch(touch));
 }
 
 function round(touch) {
