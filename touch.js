@@ -1,7 +1,8 @@
 const ongoingTouches = [];
 
-let penColor = "#000";
+let penColor = "black";
 let penWidth = 4;
+let penMode = flat;
 
 const vvp = window.visualViewport;
 
@@ -14,7 +15,15 @@ document.addEventListener("DOMContentLoaded", () => {
 function activateUIHandlers() {  
   document.querySelector("#penSizeSlider").addEventListener('input', (event) => {
     updatePenSize(event.target.value);
-  })
+  });
+  
+  document.querySelector("#flatSelect").addEventListener('input', () => {
+  	penMode = flat;
+  });
+  
+  document.querySelector("#roundSelect").addEventListener('input', () => {
+  	penMode = round;
+  });
 }
 
 function updatePenSize(value) {
@@ -46,37 +55,55 @@ function activateTouchHandlers() {
 	});
 }
 
+function flat(touch, touchIndex) {
+	const ctx = getCanvasContext();
+	
+	ctx.beginPath();
+	ctx.moveTo(ongoingTouches[touchIndex].pageX, ongoingTouches[touchIndex].pageY);
+	ctx.lineTo(touch.pageX, touch.pageY);
+	ctx.lineWidth = penWidth;
+	ctx.strokeStyle = penColor;
+	ctx.stroke();
+}
+
+function round(touch) {
+	const ctx = getCanvasContext();
+
+	ctx.beginPath();
+	ctx.strokeStyle = penColor;
+	
+	ctx.arc(touch.pageX, touch.pageY, penWidth, 0, 2 * Math.pi);
+	
+	ctx.fill();
+	ctx.stroke();
+}
+
 function handleStart(event) {
 	event.preventDefault();
 
 	const touches = event.changedTouches;
-	const ctx = getCanvasContext();
 
 	for (let i = 0; i < touches.length; i++) {
-		let touch = touches[i];
+		const touch = touches[i];
+		
+		if (penMode === round) { penMode(touch); }
 		
 		ongoingTouches.push(copyTouch(touch));
-	};
+	}
 }
 
 function handleMove(event) {
 	event.preventDefault();
 	
 	const touches = event.changedTouches;
-	const ctx = getCanvasContext();
 
 	for (let i = 0; i < touches.length; i++) {
 		const touchIndex = ongoingTouchIndexById(touches[i].identifier);
 
-		if (touchIndex != -1) {
+		if (touchIndex !== -1) {
 		  const touch = touches[i];
 		  
-			ctx.beginPath();
-			ctx.moveTo(ongoingTouches[touchIndex].pageX, ongoingTouches[touchIndex].pageY);
-			ctx.lineTo(touch.pageX, touch.pageY);
-			ctx.lineWidth = penWidth;
-			ctx.strokeStyle = penColor;
-			ctx.stroke();
+		  penMode(touch, touchIndex);
 
 		  // not splicing draws from origin to all moves,
 		  // potential feature!
@@ -92,16 +119,13 @@ function handleEnd(event) {
 	const touches = event.changedTouches;
 
 	for (let i = 0; i < touches.length; i++) {
-	  let touch = touches[i];
+	  const touch = touches[i];
 
-		let touchIndex = ongoingTouchIndexById(touch.identifier);
+		const touchIndex = ongoingTouchIndexById(touch.identifier);
 
-		if (touchIndex != -1) {
-			ctx.lineWidth = penWidth;
-			ctx.fillStyle = penColor;
-			ctx.beginPath();
-			ctx.moveTo(ongoingTouches[touchIndex].pageX, ongoingTouches[touchIndex].pageY);
-			ctx.lineTo(touch.pageX, touch.pageY);
+		if (touchIndex !== -1) {
+			penMode(touch, touchIndex);
+			
 			ongoingTouches.splice(touchIndex, 1);
 		}
 	}
@@ -112,7 +136,7 @@ function handleCancel(event) {
 	const touches = event.changedTouches;
 
 	for (let i = 0; i < touches.length; i++) {
-		let touchIndex = ongoingTouchIndexById(touches[i].identifier);
+		const touchIndex = ongoingTouchIndexById(touches[i].identifier);
 		ongoingTouches.splice(touchIndex, 1); // remove it; we're done
 	}
 }
