@@ -1,10 +1,12 @@
 const ongoingTouches = [];
 
 let penColor = "black";
-let penWidth = 4;
+let penSize = 4;
 let penMode = flat;
 
 const vvp = window.visualViewport;
+const canvas = document.querySelector('#canvas');
+const ctx = canvas.getContext('2d');
 
 document.addEventListener("DOMContentLoaded", () => {
 	activateTouchHandlers();
@@ -26,13 +28,9 @@ function activateUIHandlers() {
   });
 }
 
-function updatePenSize(value) {
-  penWidth = Math.max(value, 1);
-}
-
-function updateCanvasSize() {
-  const canvas = getCanvas();
-  
+// currently this clears the canvas during resize
+// need to save current/override clear
+function updateCanvasSize() {  
   canvas.setAttribute('width', vvp.width);
   canvas.setAttribute('height', vvp.height);
 }
@@ -51,31 +49,8 @@ function activateTouchHandlers() {
 	];
 	
 	touchEventHandlers.forEach((eventHandler) => {
-		getCanvas().addEventListener(eventHandler[0], eventHandler[1]);
+		canvas.addEventListener(eventHandler[0], eventHandler[1]);
 	});
-}
-
-function flat(touch, touchIndex) {
-	const ctx = getCanvasContext();
-	
-	ctx.beginPath();
-	ctx.moveTo(ongoingTouches[touchIndex].pageX, ongoingTouches[touchIndex].pageY);
-	ctx.lineTo(touch.pageX, touch.pageY);
-	ctx.lineWidth = penWidth;
-	ctx.strokeStyle = penColor;
-	ctx.stroke();
-}
-
-function round(touch) {
-	const ctx = getCanvasContext();
-
-	ctx.beginPath();
-	ctx.strokeStyle = penColor;
-	
-	ctx.arc(touch.pageX, touch.pageY, penWidth, 0, 2 * Math.pi);
-	
-	ctx.fill();
-	ctx.stroke();
 }
 
 function handleStart(event) {
@@ -114,8 +89,7 @@ function handleMove(event) {
 
 function handleEnd(event) {
 	event.preventDefault();
-	
-	const ctx = getCanvasContext();
+
 	const touches = event.changedTouches;
 
 	for (let i = 0; i < touches.length; i++) {
@@ -155,14 +129,29 @@ function copyTouch({ identifier, pageX, pageY }) {
   return { identifier, pageX, pageY };
 }
 
-function getCanvas(){
-	return document.querySelector('#canvas');
-}
-
-function getCanvasContext(){
-	return getCanvas().getContext('2d');
-}
-
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max)
+}
+
+function updatePenSize(val) {
+	penSize = (val > 0) ? val : 1;
+}
+
+function flat(touch, touchIndex) {	
+	ctx.beginPath();
+	ctx.moveTo(ongoingTouches[touchIndex].pageX, ongoingTouches[touchIndex].pageY);
+	ctx.lineTo(touch.pageX, touch.pageY);
+	ctx.lineWidth = penSize;
+	ctx.strokeStyle = penColor;
+	ctx.stroke();
+}
+
+function round(touch) {
+	ctx.beginPath();
+	ctx.strokeStyle = penColor;
+	
+	ctx.arc(touch.pageX, touch.pageY, penSize, 0, 2 * Math.PI);
+	
+	ctx.fill();
+	ctx.stroke();
 }
