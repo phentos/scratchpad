@@ -129,7 +129,7 @@ function ongoingTouchIndexById(idToFind) {
 			return i;
 		}
 	}
-	
+
 	return -1; // not found
 }
 
@@ -149,7 +149,8 @@ function flat(touch, touchIndex) {
 	ctx.beginPath();
 	ctx.moveTo(ongoingTouches[touchIndex].pageX, ongoingTouches[touchIndex].pageY);
 	ctx.lineTo(touch.pageX, touch.pageY);
-	ctx.lineWidth = penSize;
+	
+	ctx.lineWidth = (touch.force === 0) ? penSize : penSize * (1+touch.force);
 	ctx.strokeStyle = penColor;
 	ctx.stroke();
 	
