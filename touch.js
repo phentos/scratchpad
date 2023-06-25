@@ -5,7 +5,7 @@ const touchEventHandlers = [
 	["touchmove", handleMove]
 ];
 
-const ongoingTouches = [];
+const ongoingTouches = []; // TODO
 
 let penColor = "black";
 let penSize = 4;
@@ -75,7 +75,7 @@ function handleStart(event) {
 
 		if (penMode === round) { penMode(touch); }
 
-		ongoingTouches.push(copyTouch(touch));
+		ongoingTouches.push(copyTouch(touch)); // TODO
 	}
 }
 
@@ -83,7 +83,7 @@ function handleMove(event) {
 	const touches = event.changedTouches;
 
 	for (let i = 0; i < touches.length; i++) {
-		const touchIndex = ongoingTouchIndexById(touches[i].identifier);
+		const touchIndex = ongoingTouchIndexById(touches[i].identifier); // TODO
 
 		if (touchIndex !== -1) {
 			const touch = touches[i];
@@ -92,7 +92,7 @@ function handleMove(event) {
 
 			// not splicing draws from origin to all moves,
 			// potential feature!
-			ongoingTouches.splice(touchIndex, 1, copyTouch(touch));
+			ongoingTouches.splice(touchIndex, 1, copyTouch(touch)); // TODO
 		}
 	}
 }
@@ -103,12 +103,12 @@ function handleEnd(event) {
 	for (let i = 0; i < touches.length; i++) {
 		const touch = touches[i];
 
-		const touchIndex = ongoingTouchIndexById(touch.identifier);
+		const touchIndex = ongoingTouchIndexById(touch.identifier); // TODO
 
 		if (touchIndex !== -1) {
 			penMode(touch, touchIndex);
 
-			ongoingTouches.splice(touchIndex, 1);
+			ongoingTouches.splice(touchIndex, 1); // TODO
 		}
 	}
 }
@@ -117,12 +117,13 @@ function handleCancel(event) {
 	const touches = event.changedTouches;
 
 	for (let i = 0; i < touches.length; i++) {
-		const touchIndex = ongoingTouchIndexById(touches[i].identifier);
+		const touchIndex = ongoingTouchIndexById(touches[i].identifier); // TODO
 
-		ongoingTouches.splice(touchIndex, 1); // remove it; we're done
+		ongoingTouches.splice(touchIndex, 1); // TODO
 	}
 }
 
+// TODO
 function ongoingTouchIndexById(idToFind) {
 	for (let i = 0; i < ongoingTouches.length; i++) {
 		if (ongoingTouches[i].identifier === idToFind) {
@@ -134,7 +135,7 @@ function ongoingTouchIndexById(idToFind) {
 }
 
 function copyTouch({ identifier, pageX, pageY }) {
-	return { identifier, pageX, pageY };
+	return { identifier: { pageX, pageY }};
 }
 
 function clamp(value, min, max) {
@@ -147,7 +148,7 @@ function updatePenSize(val) {
 
 function flat(touch, touchIndex) {	
 	ctx.beginPath();
-	ctx.moveTo(ongoingTouches[touchIndex].pageX, ongoingTouches[touchIndex].pageY);
+	ctx.moveTo(ongoingTouches[touchIndex].pageX, ongoingTouches[touchIndex].pageY); // TODO
 	ctx.lineTo(touch.pageX, touch.pageY);
 
 	ctx.lineWidth = (touch.force === 0) ? penSize : penSize * (1+touch.force);
@@ -156,7 +157,7 @@ function flat(touch, touchIndex) {
 
 	// not splicing draws from origin to all moves,
 	// potential feature!
-	ongoingTouches.splice(touchIndex, 1, copyTouch(touch));
+	ongoingTouches.splice(touchIndex, 1, copyTouch(touch)); // TODO
 }
 
 // fan currently behaves identically to flat
@@ -168,7 +169,7 @@ function fan(touch, touchIndex) {
 	ctx.strokeStyle = penColor;
 	ctx.stroke();
 
-	ongoingTouches.splice(touchIndex, 1, copyTouch(touch));
+	ongoingTouches.splice(touchIndex, 1, copyTouch(touch)); // TODO
 }
 
 function round(touch) {
