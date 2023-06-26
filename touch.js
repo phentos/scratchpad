@@ -129,7 +129,6 @@ function flat(touch) {
 	ctx.stroke();
 }
 
-// 
 function fan(touch) {
 	ctx.beginPath();
 	const prev = getPreviousTouchState(touch);
