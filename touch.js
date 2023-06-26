@@ -1,4 +1,4 @@
-const debug = false;
+const debug = true;
 
 const touchEventHandlers = [
 	["touchstart", handleStart],
@@ -7,19 +7,24 @@ const touchEventHandlers = [
 	["touchmove", handleMove]
 ];
 
+const penModeSelections = [
+	['#flatSelect', flat, 80],
+	['#dotSelect', dot, 4],
+	['#fanSelect', fan, 1],
+	['#circleSelect', circle, 80]
+]
+
 const touchHistory = {};
 
 let penColor = "black";
 let penSize = 4;
-let penMode = round;
-let brushOrigin;
+let penMode = dot;
 
 const vvp = window.visualViewport;
 const canvas = document.querySelector('#canvas');
 const ctx = canvas.getContext('2d');
 
 document.addEventListener("DOMContentLoaded", () => {
-	if (debug) { activateDebugHandlers(); }
 	activateTouchHandlers();
 	activateUIHandlers();
 	activateViewportHandler();
@@ -30,24 +35,14 @@ function activateUIHandlers() {
 		event.preventDefault();
 		updatePenSize(event.target.value);
 	});
-
-	document.querySelector("#flatSelect").addEventListener('input', (event) => {
-		event.preventDefault();
-		penMode = flat;
-		updatePenSize(20);
-	});
-
-	document.querySelector("#roundSelect").addEventListener('input', (event) => {
-		event.preventDefault();
-		penMode = round;
-		updatePenSize(4);
-	});
-
-	document.querySelector("#fanSelect").addEventListener('input', (event) => {
-		event.preventDefault();
-		penMode = fan;
-		updatePenSize(1);
-	});
+	
+	penModeSelections.forEach(([elementId, penFunction, defaultPenSize]) => {
+		document.querySelector(elementId).addEventListener('change', (event) => {
+			event.preventDefault();
+			penMode = penFunction;
+			updatePenSize(defaultPenSize);
+		});
+	})
 
 	document.querySelector('#clear').addEventListener('click', (event) => {
 		event.preventDefault();
@@ -87,7 +82,7 @@ function handleStart(event) {
 	for (let i = 0; i < touches.length; i++) {
 		const touch = touches[i];
 
-		if (penMode === round) { penMode(touch); }
+		penMode(touch);
 
 		addTouchEntry(touch);
 	}
@@ -149,13 +144,23 @@ function fan(touch) {
 	ctx.stroke();
 }
 
-function round(touch) {
+function dot(touch) {
+	addTouchEntry(touch);
 	ctx.beginPath();
 	ctx.strokeStyle = penColor;
+	ctx.fillStyle = penColor;
 
 	ctx.arc(touch.pageX, touch.pageY, penSize, 0, 2 * Math.PI);
-
 	ctx.fill();
+}
+
+function circle(touch) {
+	addTouchEntry(touch);
+	ctx.beginPath();
+	ctx.strokeStyle = penColor;
+	ctx.fillStyle = penColor;
+
+	ctx.arc(touch.pageX, touch.pageY, penSize, 0, 2 * Math.PI);
 	ctx.stroke();
 }
 
