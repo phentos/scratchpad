@@ -5,7 +5,7 @@ const touchEventHandlers = [
 	["touchmove", handleMove]
 ];
 
-const ongoingTouches = []; // TODO
+const touchHistory = {};
 
 let penColor = "black";
 let penSize = 4;
@@ -48,7 +48,7 @@ function activateUIHandlers() {
 
 // currently this clears the canvas during resize
 // need to save current/override clear
-function updateCanvasSize() {  
+function updateCanvasSize() {
 	canvas.setAttribute('width', vvp.width);
 	canvas.setAttribute('height', vvp.height);
 }
@@ -75,7 +75,7 @@ function handleStart(event) {
 
 		if (penMode === round) { penMode(touch); }
 
-		ongoingTouches.push(copyTouch(touch)); // TODO
+		addTouchEntry(touch);
 	}
 }
 
@@ -83,17 +83,7 @@ function handleMove(event) {
 	const touches = event.changedTouches;
 
 	for (let i = 0; i < touches.length; i++) {
-		const touchIndex = ongoingTouchIndexById(touches[i].identifier); // TODO
-
-		if (touchIndex !== -1) {
-			const touch = touches[i];
-
-			penMode(touch, touchIndex);
-
-			// not splicing draws from origin to all moves,
-			// potential feature!
-			ongoingTouches.splice(touchIndex, 1, copyTouch(touch)); // TODO
-		}
+		penMode(touches[i]);
 	}
 }
 
@@ -102,14 +92,9 @@ function handleEnd(event) {
 
 	for (let i = 0; i < touches.length; i++) {
 		const touch = touches[i];
-
-		const touchIndex = ongoingTouchIndexById(touch.identifier); // TODO
-
-		if (touchIndex !== -1) {
-			penMode(touch, touchIndex);
-
-			ongoingTouches.splice(touchIndex, 1); // TODO
-		}
+		
+		penMode(touch);
+		removeTouchEntry(touch);
 	}
 }
 
@@ -117,25 +102,10 @@ function handleCancel(event) {
 	const touches = event.changedTouches;
 
 	for (let i = 0; i < touches.length; i++) {
-		const touchIndex = ongoingTouchIndexById(touches[i].identifier); // TODO
+		const touch = touches[i];
 
-		ongoingTouches.splice(touchIndex, 1); // TODO
+		removeTouchEntry(touch);
 	}
-}
-
-// TODO
-function ongoingTouchIndexById(idToFind) {
-	for (let i = 0; i < ongoingTouches.length; i++) {
-		if (ongoingTouches[i].identifier === idToFind) {
-			return i;
-		}
-	}
-
-	return -1; // not found
-}
-
-function copyTouch({ identifier, pageX, pageY }) {
-	return { identifier: { pageX, pageY }};
 }
 
 function clamp(value, min, max) {
@@ -146,30 +116,28 @@ function updatePenSize(val) {
 	penSize = (val > 0) ? val : 1;
 }
 
-function flat(touch, touchIndex) {	
+function flat(touch) {
+	const prev = getPreviousTouchState(touch);
+	addTouchEntry(touch);
+	
 	ctx.beginPath();
-	ctx.moveTo(ongoingTouches[touchIndex].pageX, ongoingTouches[touchIndex].pageY); // TODO
+	ctx.moveTo(prev.pageX, prev.pageY);
 	ctx.lineTo(touch.pageX, touch.pageY);
 
 	ctx.lineWidth = (touch.force === 0) ? penSize : penSize * (1+touch.force);
 	ctx.strokeStyle = penColor;
 	ctx.stroke();
-
-	// not splicing draws from origin to all moves,
-	// potential feature!
-	ongoingTouches.splice(touchIndex, 1, copyTouch(touch)); // TODO
 }
 
-// fan currently behaves identically to flat
-function fan(touch, touchIndex) {
+// 
+function fan(touch) {
 	ctx.beginPath();
-	ctx.moveTo(brushOrigin[0], brushOrigin[1]);
+	const prev = getPreviousTouchState(touch);
+	ctx.moveTo(prev.pageX, prev.pageY);
 	ctx.lineTo(touch.pageX, touch.pageY);
 	ctx.lineWidth = penSize;
 	ctx.strokeStyle = penColor;
 	ctx.stroke();
-
-	ongoingTouches.splice(touchIndex, 1, copyTouch(touch)); // TODO
 }
 
 function round(touch) {
@@ -180,4 +148,22 @@ function round(touch) {
 
 	ctx.fill();
 	ctx.stroke();
+}
+
+function isActiveTouch(touch){
+	return Object.hasOwn(touchHistory, touch.identifier); // most recent step, still converting to dictionary from set
+}
+
+// not working because set contains a dict not an id keyed to a dict, changed to use dict
+function getPreviousTouchState(touch){
+	if (isActiveTouch(touch)) { return touchHistory[touch.identifier]; }
+	else { console.warn("getPreviousTouchState didn't find a touch"); }
+}
+
+function removeTouchEntry(touch){
+	delete touchHistory[touch.identifier];
+}
+
+function addTouchEntry(touch){
+	touchHistory[touch.identifier] = { pageX:touch.pageX, pageY:touch.pageY }
 }
