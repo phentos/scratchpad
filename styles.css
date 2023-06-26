@@ -23,7 +23,7 @@ body {
 #penStyles {
   top: 5%;
   left: 5%;   
-  background-color: 
+  background-color: #888;
 }
 
 #penStyles fieldset {
@@ -32,4 +32,24 @@ body {
 
 .block {
   display:block;
+}
+
+#clearButton {
+    background-color: #595959;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition-duration: 0.4s;
+}
+
+#clearButton:hover {
+    background-color: #3D3D3D;
+    color: #663300;
 }
