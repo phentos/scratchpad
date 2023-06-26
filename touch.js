@@ -1,3 +1,5 @@
+const debug = false;
+
 const touchEventHandlers = [
 	["touchstart", handleStart],
 	["touchend", handleEnd],
@@ -17,33 +19,45 @@ const canvas = document.querySelector('#canvas');
 const ctx = canvas.getContext('2d');
 
 document.addEventListener("DOMContentLoaded", () => {
+	if (debug) { activateDebugHandlers(); }
 	activateTouchHandlers();
 	activateUIHandlers();
 	activateViewportHandler();
 });
 
-function activateUIHandlers() {  
+function activateUIHandlers() {
 	document.querySelector("#penSizeSlider").addEventListener('input', (event) => {
+		event.preventDefault();
 		updatePenSize(event.target.value);
 	});
 
-	document.querySelector("#flatSelect").addEventListener('input', () => {
+	document.querySelector("#flatSelect").addEventListener('input', (event) => {
+		event.preventDefault();
 		penMode = flat;
-		penSize = 20;
+		updatePenSize(20);
 	});
 
-	document.querySelector("#roundSelect").addEventListener('input', () => {
+	document.querySelector("#roundSelect").addEventListener('input', (event) => {
+		event.preventDefault();
 		penMode = round;
+		updatePenSize(4);
 	});
 
-	document.querySelector("#fanSelect").addEventListener('input', () => {
+	document.querySelector("#fanSelect").addEventListener('input', (event) => {
+		event.preventDefault();
 		penMode = fan;
-		penSize = 40;
+		updatePenSize(1);
 	});
 
-	document.querySelector('#clear').addEventListener('input', () => {
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
+	document.querySelector('#clear').addEventListener('click', (event) => {
+		event.preventDefault();
+		updateCanvasSize();
 	});
+}
+
+function updatePenSize(val) {
+	penSize = (val > 0) ? val : 1;
+	document.querySelector('#penSizeSlider').value = penSize;
 }
 
 // currently this clears the canvas during resize
@@ -112,10 +126,6 @@ function clamp(value, min, max) {
 	return Math.min(Math.max(value, min), max)
 }
 
-function updatePenSize(val) {
-	penSize = (val > 0) ? val : 1;
-}
-
 function flat(touch) {
 	const prev = getPreviousTouchState(touch);
 	addTouchEntry(touch);
@@ -150,10 +160,9 @@ function round(touch) {
 }
 
 function isActiveTouch(touch){
-	return Object.hasOwn(touchHistory, touch.identifier); // most recent step, still converting to dictionary from set
+	return Object.hasOwn(touchHistory, touch.identifier);
 }
 
-// not working because set contains a dict not an id keyed to a dict, changed to use dict
 function getPreviousTouchState(touch){
 	if (isActiveTouch(touch)) { return touchHistory[touch.identifier]; }
 	else { console.warn("getPreviousTouchState didn't find a touch"); }
@@ -165,4 +174,10 @@ function removeTouchEntry(touch){
 
 function addTouchEntry(touch){
 	touchHistory[touch.identifier] = { pageX:touch.pageX, pageY:touch.pageY }
+}
+
+function activateDebugHandlers(){
+	window.onbeforeunload = function() {
+		return 'Page reloading';
+	}
 }
