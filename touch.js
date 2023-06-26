@@ -82,7 +82,7 @@ function handleStart(event) {
 	for (let i = 0; i < touches.length; i++) {
 		const touch = touches[i];
 
-		penMode(touch);
+		if (penMode !== fan) { penMode(touch); }
 
 		addTouchEntry(touch);
 	}
