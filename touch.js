@@ -97,12 +97,12 @@ function activateTouchHandlers() {
 
 function handleStart(event) {
 	const touches = event.changedTouches;
-
+	
 	for (let i = 0; i < touches.length; i++) {
 		const touch = touches[i];
-
-		if (penMode !== fan) { penMode(touch); }
-
+	
+		if (penMode === dot) { penMode(touch); }
+	
 		addTouchEntry(touch);
 	}
 }
@@ -111,7 +111,10 @@ function handleMove(event) {
 	const touches = event.changedTouches;
 
 	for (let i = 0; i < touches.length; i++) {
-		penMode(touches[i]);
+		const touch = touches[i];
+		penMode(touch);
+		
+		if (penMode !== fan) { addTouchEntry(touch); }
 	}
 }
 
@@ -142,7 +145,7 @@ function clamp(value, min, max) {
 
 function flat(touch) {
 	const prev = getPreviousTouchState(touch);
-	addTouchEntry(touch);
+	
 	
 	ctx.beginPath();
 	ctx.moveTo(prev.pageX, prev.pageY);
@@ -163,7 +166,7 @@ function fan(touch) {
 }
 
 function dot(touch) {
-	addTouchEntry(touch);
+	
 	ctx.beginPath();
 	ctx.strokeStyle = penColor;
 	ctx.fillStyle = penColor;
@@ -173,7 +176,7 @@ function dot(touch) {
 }
 
 function circle(touch) {
-	addTouchEntry(touch);
+	
 	ctx.beginPath();
 	ctx.strokeStyle = penColor;
 	ctx.lineWidth = 1;
@@ -196,11 +199,19 @@ function removeTouchEntry(touch){
 }
 
 function addTouchEntry(touch){
-	touchHistory[touch.identifier] = { pageX:touch.pageX, pageY:touch.pageY }
+	touchHistory[touch.identifier] = extractPageXY(touch);
+}
+
+function extractPageXY(something) {
+	return {pageX:something.pageX, pageY:something.pageY};
 }
 
 function activateDebugHandlers(){
 	window.onbeforeunload = function() {
 		return 'Page reloading';
 	}
+}
+
+function isMouseEvent(event) {
+	return event instanceof MouseEvent;
 }
