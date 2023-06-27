@@ -1,5 +1,12 @@
 const debug = true;
 
+const FG_COLOR = "#000";
+const BG_COLOR = "#666";
+const COLOR_STATE_SYMBOLS = {
+	[FG_COLOR]:'images/yin-yang.svg',
+	[BG_COLOR]:'images/yang-yin.svg'
+}
+
 const touchEventHandlers = [
 	["touchstart", handleStart],
 	["touchend", handleEnd],
@@ -16,7 +23,7 @@ const penModeSelections = [
 
 const touchHistory = {};
 
-let penColor = "black";
+let penColor = FG_COLOR;
 let penSize = 4;
 let penMode = dot;
 
@@ -35,6 +42,11 @@ function activateUIHandlers() {
 		event.preventDefault();
 		updatePenSize(event.target.value);
 	});
+	
+	document.querySelector("#invert").addEventListener('click', () => {
+		penColor = (penColor === BG_COLOR) ? FG_COLOR : BG_COLOR;
+		document.querySelector('#invert').src = COLOR_STATE_SYMBOLS[penColor];
+	})
 	
 	penModeSelections.forEach(([elementId, penFunction, defaultPenSize]) => {
 		document.querySelector(elementId).addEventListener('change', (event) => {
