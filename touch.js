@@ -1,4 +1,4 @@
-const debug = true;
+const debug = false;
 
 const FG_COLOR = "#000";
 const BG_COLOR = "#666";
@@ -44,8 +44,7 @@ function activateUIHandlers() {
 	});
 	
 	document.querySelector("#invert").addEventListener('click', () => {
-		penColor = (penColor === BG_COLOR) ? FG_COLOR : BG_COLOR;
-		document.querySelector('#invert').src = COLOR_STATE_SYMBOLS[penColor];
+			invertColors();
 	})
 	
 	penModeSelections.forEach(([elementId, penFunction, defaultPenSize]) => {
@@ -59,7 +58,15 @@ function activateUIHandlers() {
 	document.querySelector('#clear').addEventListener('click', (event) => {
 		event.preventDefault();
 		updateCanvasSize();
+		invertColors(true);
 	});
+}
+
+function invertColors(reset=false) {
+	const invertElement = document.querySelector('#invert');
+		
+	penColor = (reset) ? FG_COLOR : (penColor === BG_COLOR) ? FG_COLOR : BG_COLOR;	
+	invertElement.src = COLOR_STATE_SYMBOLS[penColor];
 }
 
 function updatePenSize(val) {
@@ -140,8 +147,7 @@ function flat(touch) {
 	ctx.beginPath();
 	ctx.moveTo(prev.pageX, prev.pageY);
 	ctx.lineTo(touch.pageX, touch.pageY);
-
-	ctx.lineWidth = (touch.force === 0) ? penSize : penSize * (1+touch.force);
+	ctx.lineWidth = penSize;
 	ctx.strokeStyle = penColor;
 	ctx.stroke();
 }
@@ -170,7 +176,7 @@ function circle(touch) {
 	addTouchEntry(touch);
 	ctx.beginPath();
 	ctx.strokeStyle = penColor;
-	ctx.fillStyle = penColor;
+	ctx.lineWidth = 1;
 
 	ctx.arc(touch.pageX, touch.pageY, penSize, 0, 2 * Math.PI);
 	ctx.stroke();
