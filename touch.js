@@ -7,27 +7,6 @@ const COLOR_STATE_SYMBOLS = {
 	[BG_COLOR]:'images/yang-yin.svg'
 }
 
-const touchEventHandlers = [
-	["touchstart", handleTouchStart],
-	["touchend", handleTouchEnd],
-	["touchcancel", handleTouchCancel],
-	["touchmove", handleTouchMove]
-];
-
-// const mouseEventHandlers = [
-// 	["mousedown", handleMouseStart],
-// 	["mouseup", handleMouseEnd],
-// 	["wheel", handleMouseWheel]
-// ];
-
-// const keyEventHandlers = [
-// 	['t', setFlat],
-// 	['f', setFan],
-// 	['d', setDot],
-// 	['c', setCircle],
-// 	['shift', invertColors]
-// ];
-
 const penModeSelections = [
 	['#flatSelect', flat, 80],
 	['#dotSelect', dot, 4],
@@ -234,3 +213,33 @@ function activateDebugHandlers(){
 function isMouseEvent(event) {
 	return event instanceof MouseEvent;
 }
+
+function setFlat() {}
+function setCircle() {}
+function setDot() {}
+function setFan() {}
+
+function handleMouseStart() {}
+function handleMouseEnd() {}
+function handleMouseWheel() {}
+
+const touchEventHandlers = [
+	["touchstart", handleTouchStart],
+	["touchend", handleTouchEnd],
+	["touchcancel", handleTouchCancel],
+	["touchmove", handleTouchMove]
+];
+
+const mouseEventHandlers = [
+	["mousedown", handleMouseStart],
+	["mouseup", handleMouseEnd],
+	["wheel", handleMouseWheel]
+];
+
+const keyEventHandlers = [
+	['t', setFlat],
+	['f', setFan],
+	['d', setDot],
+	['c', setCircle],
+	['shift', invertColors]
+];
