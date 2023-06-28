@@ -20,9 +20,13 @@ const touchEventHandlers = [
 // 	["wheel", handleMouseWheel]
 // ];
 
-const keyEventHandlers = [
-
-];
+// const keyEventHandlers = [
+// 	['t', setFlat],
+// 	['f', setFan],
+// 	['d', setDot],
+// 	['c', setCircle],
+// 	['shift', invertColors]
+// ];
 
 const penModeSelections = [
 	['#flatSelect', flat, 80],
