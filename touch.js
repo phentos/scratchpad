@@ -8,10 +8,20 @@ const COLOR_STATE_SYMBOLS = {
 }
 
 const touchEventHandlers = [
-	["touchstart", handleStart],
-	["touchend", handleEnd],
-	["touchcancel", handleCancel],
-	["touchmove", handleMove]
+	["touchstart", handleTouchStart],
+	["touchend", handleTouchEnd],
+	["touchcancel", handleTouchCancel],
+	["touchmove", handleTouchMove]
+];
+
+// const mouseEventHandlers = [
+// 	["mousedown", handleMouseStart],
+// 	["mouseup", handleMouseEnd],
+// 	["wheel", handleMouseWheel]
+// ];
+
+const keyEventHandlers = [
+
 ];
 
 const penModeSelections = [
@@ -22,7 +32,6 @@ const penModeSelections = [
 ]
 
 const touchHistory = {};
-
 let penColor = FG_COLOR;
 let penSize = 4;
 let penMode = dot;
@@ -38,34 +47,34 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function activateUIHandlers() {
-	document.querySelector("#penSizeSlider").addEventListener('input', (event) => {
-		event.preventDefault();
-		updatePenSize(event.target.value);
-	});
-	
-	document.querySelector("#invert").addEventListener('click', () => {
-			invertColors();
-	})
-	
 	penModeSelections.forEach(([elementId, penFunction, defaultPenSize]) => {
 		document.querySelector(elementId).addEventListener('change', (event) => {
 			event.preventDefault();
 			penMode = penFunction;
 			updatePenSize(defaultPenSize);
 		});
+	});
+
+	document.querySelector("#penSizeSlider").addEventListener('input', (event) => {
+		event.preventDefault();
+		updatePenSize(event.target.value);
+	});
+
+	document.querySelector("#invert").addEventListener('click', () => {
+		invertColors();
 	})
 
 	document.querySelector('#clear').addEventListener('click', (event) => {
 		event.preventDefault();
 		updateCanvasSize();
-		invertColors(true);
+		invertColors(false);
 	});
 }
 
-function invertColors(reset=false) {
+function invertColors(invert=true) {
 	const invertElement = document.querySelector('#invert');
-		
-	penColor = (reset) ? FG_COLOR : (penColor === BG_COLOR) ? FG_COLOR : BG_COLOR;	
+
+	penColor = (!invert) ? FG_COLOR : (penColor === BG_COLOR) ? FG_COLOR : BG_COLOR;	
 	invertElement.src = COLOR_STATE_SYMBOLS[penColor];
 }
 
@@ -95,41 +104,41 @@ function activateTouchHandlers() {
 	});
 }
 
-function handleStart(event) {
+function handleTouchStart(event) {
 	const touches = event.changedTouches;
-	
+
 	for (let i = 0; i < touches.length; i++) {
 		const touch = touches[i];
-	
+
 		if (penMode === dot) { penMode(touch); }
-	
+
 		addTouchEntry(touch);
 	}
 }
 
-function handleMove(event) {	
+function handleTouchMove(event) {	
 	const touches = event.changedTouches;
 
 	for (let i = 0; i < touches.length; i++) {
 		const touch = touches[i];
 		penMode(touch);
-		
+
 		if (penMode !== fan) { addTouchEntry(touch); }
 	}
 }
 
-function handleEnd(event) {
+function handleTouchEnd(event) {
 	const touches = event.changedTouches;
 
 	for (let i = 0; i < touches.length; i++) {
 		const touch = touches[i];
-		
+
 		penMode(touch);
 		removeTouchEntry(touch);
 	}
 }
 
-function handleCancel(event) {
+function handleTouchCancel(event) {
 	const touches = event.changedTouches;
 
 	for (let i = 0; i < touches.length; i++) {
@@ -144,30 +153,36 @@ function clamp(value, min, max) {
 }
 
 function flat(touch) {
-	const prev = getPreviousTouchState(touch);
-	
-	
 	ctx.beginPath();
+
+	const prev = getPreviousTouchState(touch);
+
 	ctx.moveTo(prev.pageX, prev.pageY);
 	ctx.lineTo(touch.pageX, touch.pageY);
+
 	ctx.lineWidth = penSize;
 	ctx.strokeStyle = penColor;
+
 	ctx.stroke();
 }
 
 function fan(touch) {
 	ctx.beginPath();
+
 	const prev = getPreviousTouchState(touch);
+
 	ctx.moveTo(prev.pageX, prev.pageY);
 	ctx.lineTo(touch.pageX, touch.pageY);
+
 	ctx.lineWidth = penSize;
 	ctx.strokeStyle = penColor;
+
 	ctx.stroke();
 }
 
 function dot(touch) {
-	
 	ctx.beginPath();
+
 	ctx.strokeStyle = penColor;
 	ctx.fillStyle = penColor;
 
@@ -176,8 +191,8 @@ function dot(touch) {
 }
 
 function circle(touch) {
-	
 	ctx.beginPath();
+
 	ctx.strokeStyle = penColor;
 	ctx.lineWidth = 1;
 
