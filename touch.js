@@ -23,48 +23,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	activateViewportHandler();
 });
 
-function handleTouchStart(event) {
-	const touches = event.changedTouches;
-
-	for (let i = 0; i < touches.length; i++) {
-		const touch = touches[i];
-
-		if (penMode === dot | penMode === circle) { penMode(touch); }
-
-		createTouchEntry(touch);
-	}
-}
-
-function handleTouchMove(event) {	
-	const touches = event.changedTouches;
-
-	for (let i = 0; i < touches.length; i++) {
-		const touch = touches[i];
-		penMode(touch);
-
-		if (penMode !== fan) { createTouchEntry(touch); }
-	}
-}
-
-function handleTouchEnd(event) {
-	const touches = event.changedTouches;
-
-	for (let i = 0; i < touches.length; i++) {
-		const touch = touches[i];
-
-		penMode(touch);
-		removeTouchEntry(touch);
-	}
-}
-
-function handleTouchCancel(event) {
-	const touches = event.changedTouches;
-
-	for (let i = 0; i < touches.length; i++) {
-		const touch = touches[i];
-
-		removeTouchEntry(touch);
-	}
+function openCanvasImageInNewTab() {
+  console.log(canvas.toDataURL());
 }
 
 function clamp(value, min, max) {
@@ -153,25 +113,6 @@ function activateDebugHandlers(){
 	}
 }
 
-function handleMouseStart(event) {
-	if (penMode === dot | penMode === circle) { penMode(event); }
-	createMouseEntry(event);
-	mouseActive = true;
-}
-
-function handleMouseMove(event) {
-	if (mouseActive) {
-		penMode(event);
-		if (penMode !== fan) { createMouseEntry(event); }
-	}
-}
-
-function handleMouseEnd(event) {
-	penMode(event);
-	removeMouseEntry();
-	mouseActive = false;
-}
-
 function handleMouseWheel(event) {}
 
 const strokeEventHandlers = [
@@ -192,7 +133,8 @@ const keyEventHandlers = {
 	'd': setDot,
 	'c': setCircle,
 	'Shift': invertColors,
-	'r': clearCanvas
+	'r': clearCanvas,
+	'p': openCanvasImageInNewTab
 };
 
 function activateKeyboard() {
@@ -233,6 +175,8 @@ const penModeSelections = [
 	['#circleSelect', setCircle]
 ]
 
+/* refactor me */
+/* BEGIN PEN MODE ACTIVATORS */
 function setFlat() {
 	penMode = flat;
 	updatePenSize(80);
@@ -256,6 +200,7 @@ function setFan() {
 	updatePenSize(1);
 	updatePenMode('fan');
 }
+/* END PEN MODE ACTIVATORS */
 
 function activatePenModes(){
 	penModeSelections.forEach(([elementId, modeHandler]) => {
@@ -301,4 +246,68 @@ function activateStrokeHandlers() {
 			handler(event);
 		});
 	});
+}
+
+function handleTouchStart(event) {
+	const touches = event.changedTouches;
+
+	for (let i = 0; i < touches.length; i++) {
+		const touch = touches[i];
+
+		if (penMode === dot | penMode === circle) { penMode(touch); }
+
+		createTouchEntry(touch);
+	}
+}
+
+function handleTouchMove(event) {	
+	const touches = event.changedTouches;
+
+	for (let i = 0; i < touches.length; i++) {
+		const touch = touches[i];
+		penMode(touch);
+
+		if (penMode !== fan) { createTouchEntry(touch); }
+	}
+}
+
+function handleTouchEnd(event) {
+	const touches = event.changedTouches;
+
+	for (let i = 0; i < touches.length; i++) {
+		const touch = touches[i];
+
+		penMode(touch);
+		removeTouchEntry(touch);
+	}
+}
+
+function handleTouchCancel(event) {
+	const touches = event.changedTouches;
+
+	for (let i = 0; i < touches.length; i++) {
+		const touch = touches[i];
+
+		removeTouchEntry(touch);
+	}
+}
+
+
+function handleMouseStart(event) {
+	if (penMode === dot | penMode === circle) { penMode(event); }
+	createMouseEntry(event);
+	mouseActive = true;
+}
+
+function handleMouseMove(event) {
+	if (mouseActive) {
+		penMode(event);
+		if (penMode !== fan) { createMouseEntry(event); }
+	}
+}
+
+function handleMouseEnd(event) {
+	penMode(event);
+	removeMouseEntry();
+	mouseActive = false;
 }
