@@ -1,3 +1,22 @@
+/*
+    Scratchpad
+    A mildly esoteric drawing webapp meant to enable exploration of artistic expression in geometric ways.
+    Copyright (C) 2023 Korey Ray
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 const debug = false;
 
 const FG_COLOR = "#000";
@@ -17,14 +36,20 @@ const vvp = window.visualViewport;
 const canvas = document.querySelector('#canvas');
 const ctx = canvas.getContext('2d');
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {	
 	activateStrokeHandlers();
 	activateUIHandlers();
 	activateViewportHandler();
 });
 
+<<<<<<< HEAD
 function openCanvasImageInNewTab() {
   console.log(canvas.toDataURL());
+=======
+function displayDownloadLinks() {
+	const transparent = canvas.toDataURL();
+  console.log();
+>>>>>>> main
 }
 
 function clamp(value, min, max) {
@@ -134,7 +159,11 @@ const keyEventHandlers = {
 	'c': setCircle,
 	'Shift': invertColors,
 	'r': clearCanvas,
+<<<<<<< HEAD
 	'p': openCanvasImageInNewTab
+=======
+	'p': displayDownloadLinks
+>>>>>>> main
 };
 
 function activateKeyboard() {
