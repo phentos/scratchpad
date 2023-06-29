@@ -1,3 +1,22 @@
+/*
+    Scratchpad
+    A mildly esoteric drawing webapp meant to enable exploration of artistic expression in geometric ways.
+    Copyright (C) 2023 Korey Ray
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 const debug = false;
 
 const FG_COLOR = "#000";
@@ -17,54 +36,15 @@ const vvp = window.visualViewport;
 const canvas = document.querySelector('#canvas');
 const ctx = canvas.getContext('2d');
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {	
 	activateStrokeHandlers();
 	activateUIHandlers();
 	activateViewportHandler();
 });
 
-function handleTouchStart(event) {
-	const touches = event.changedTouches;
-
-	for (let i = 0; i < touches.length; i++) {
-		const touch = touches[i];
-
-		if (penMode === dot | penMode === circle) { penMode(touch); }
-
-		createTouchEntry(touch);
-	}
-}
-
-function handleTouchMove(event) {	
-	const touches = event.changedTouches;
-
-	for (let i = 0; i < touches.length; i++) {
-		const touch = touches[i];
-		penMode(touch);
-
-		if (penMode !== fan) { createTouchEntry(touch); }
-	}
-}
-
-function handleTouchEnd(event) {
-	const touches = event.changedTouches;
-
-	for (let i = 0; i < touches.length; i++) {
-		const touch = touches[i];
-
-		penMode(touch);
-		removeTouchEntry(touch);
-	}
-}
-
-function handleTouchCancel(event) {
-	const touches = event.changedTouches;
-
-	for (let i = 0; i < touches.length; i++) {
-		const touch = touches[i];
-
-		removeTouchEntry(touch);
-	}
+function displayDownloadLinks() {
+	const transparent = canvas.toDataURL();
+  console.log();
 }
 
 function clamp(value, min, max) {
@@ -153,25 +133,6 @@ function activateDebugHandlers(){
 	}
 }
 
-function handleMouseStart(event) {
-	if (penMode === dot | penMode === circle) { penMode(event); }
-	createMouseEntry(event);
-	mouseActive = true;
-}
-
-function handleMouseMove(event) {
-	if (mouseActive) {
-		penMode(event);
-		if (penMode !== fan) { createMouseEntry(event); }
-	}
-}
-
-function handleMouseEnd(event) {
-	penMode(event);
-	removeMouseEntry();
-	mouseActive = false;
-}
-
 function handleMouseWheel(event) {}
 
 const strokeEventHandlers = [
@@ -192,7 +153,8 @@ const keyEventHandlers = {
 	'd': setDot,
 	'c': setCircle,
 	'Shift': invertColors,
-	'r': clearCanvas
+	'r': clearCanvas,
+	'p': displayDownloadLinks
 };
 
 function activateKeyboard() {
@@ -233,6 +195,8 @@ const penModeSelections = [
 	['#circleSelect', setCircle]
 ]
 
+/* refactor me */
+/* BEGIN PEN MODE ACTIVATORS */
 function setFlat() {
 	penMode = flat;
 	updatePenSize(80);
@@ -256,6 +220,7 @@ function setFan() {
 	updatePenSize(1);
 	updatePenMode('fan');
 }
+/* END PEN MODE ACTIVATORS */
 
 function activatePenModes(){
 	penModeSelections.forEach(([elementId, modeHandler]) => {
@@ -301,4 +266,68 @@ function activateStrokeHandlers() {
 			handler(event);
 		});
 	});
+}
+
+function handleTouchStart(event) {
+	const touches = event.changedTouches;
+
+	for (let i = 0; i < touches.length; i++) {
+		const touch = touches[i];
+
+		if (penMode === dot | penMode === circle) { penMode(touch); }
+
+		createTouchEntry(touch);
+	}
+}
+
+function handleTouchMove(event) {	
+	const touches = event.changedTouches;
+
+	for (let i = 0; i < touches.length; i++) {
+		const touch = touches[i];
+		penMode(touch);
+
+		if (penMode !== fan) { createTouchEntry(touch); }
+	}
+}
+
+function handleTouchEnd(event) {
+	const touches = event.changedTouches;
+
+	for (let i = 0; i < touches.length; i++) {
+		const touch = touches[i];
+
+		penMode(touch);
+		removeTouchEntry(touch);
+	}
+}
+
+function handleTouchCancel(event) {
+	const touches = event.changedTouches;
+
+	for (let i = 0; i < touches.length; i++) {
+		const touch = touches[i];
+
+		removeTouchEntry(touch);
+	}
+}
+
+
+function handleMouseStart(event) {
+	if (penMode === dot | penMode === circle) { penMode(event); }
+	createMouseEntry(event);
+	mouseActive = true;
+}
+
+function handleMouseMove(event) {
+	if (mouseActive) {
+		penMode(event);
+		if (penMode !== fan) { createMouseEntry(event); }
+	}
+}
+
+function handleMouseEnd(event) {
+	penMode(event);
+	removeMouseEntry();
+	mouseActive = false;
 }
