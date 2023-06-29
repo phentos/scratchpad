@@ -24,7 +24,36 @@ const BG_COLOR = "#666";
 const COLOR_STATE_SYMBOLS = {
 	[FG_COLOR]:'images/yin-yang.svg',
 	[BG_COLOR]:'images/yang-yin.svg'
-}
+};
+
+const penModeSelections = [
+	['#flatSelect', setFlat],
+	['#dotSelect', setDot],
+	['#fanSelect', setFan],
+	['#circleSelect', setCircle]
+];
+
+const strokeEventHandlers = [
+	["mousedown", handleMouseStart],
+	["mousemove", handleMouseMove],
+	["mouseup", handleMouseEnd],
+	["wheel", handleMouseWheel],
+	
+	["touchstart", handleTouchStart],
+	["touchend", handleTouchEnd],
+	["touchcancel", handleTouchCancel],
+	["touchmove", handleTouchMove]
+];
+
+const keyEventHandlers = {
+	't': setFlat,
+	'f': setFan,
+	'd': setDot,
+	'c': setCircle,
+	'Shift': invertColors,
+	'r': clearCanvas,
+	'p': displayDownloadLinks
+};
 
 const strokeHistory = {};
 let penColor = FG_COLOR;
@@ -42,67 +71,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	activateViewportHandler();
 });
 
-<<<<<<< HEAD
-function openCanvasImageInNewTab() {
-  console.log(canvas.toDataURL());
-=======
+// TODO
 function displayDownloadLinks() {
 	const transparent = canvas.toDataURL();
-  console.log();
->>>>>>> main
-}
-
-function clamp(value, min, max) {
-	return Math.min(Math.max(value, min), max)
-}
-
-function flat(event) {
-	ctx.beginPath();
-
-	const prev = getPreviousStroke(event);
-
-	ctx.moveTo(prev.pageX, prev.pageY);
-	
-	ctx.lineTo(event.pageX, event.pageY);
-
-	ctx.lineWidth = penSize;
-	ctx.strokeStyle = penColor;
-
-	ctx.stroke();
-}
-
-function fan(event) {
-	ctx.beginPath();
-
-	const prev = getPreviousStroke(event);
-
-	ctx.moveTo(prev.pageX, prev.pageY);
-	ctx.lineTo(event.pageX, event.pageY);
-
-	ctx.lineWidth = penSize;
-	ctx.strokeStyle = penColor;
-
-	ctx.stroke();
-}
-
-function dot(event) {
-	ctx.beginPath();
-
-	ctx.strokeStyle = penColor;
-	ctx.fillStyle = penColor;
-
-	ctx.arc(event.pageX, event.pageY, penSize, 0, 2 * Math.PI);
-	ctx.fill();
-}
-
-function circle(event) {
-	ctx.beginPath();
-
-	ctx.strokeStyle = penColor;
-	ctx.lineWidth = 1;
-
-	ctx.arc(event.pageX, event.pageY, penSize, 0, 2 * Math.PI);
-	ctx.stroke();
 }
 
 function getPreviousStroke(stroke){
@@ -138,33 +109,8 @@ function activateDebugHandlers(){
 	}
 }
 
+// TODO
 function handleMouseWheel(event) {}
-
-const strokeEventHandlers = [
-	["mousedown", handleMouseStart],
-	["mousemove", handleMouseMove],
-	["mouseup", handleMouseEnd],
-	["wheel", handleMouseWheel],
-	
-	["touchstart", handleTouchStart],
-	["touchend", handleTouchEnd],
-	["touchcancel", handleTouchCancel],
-	["touchmove", handleTouchMove]
-];
-
-const keyEventHandlers = {
-	't': setFlat,
-	'f': setFan,
-	'd': setDot,
-	'c': setCircle,
-	'Shift': invertColors,
-	'r': clearCanvas,
-<<<<<<< HEAD
-	'p': openCanvasImageInNewTab
-=======
-	'p': displayDownloadLinks
->>>>>>> main
-};
 
 function activateKeyboard() {
 	window.addEventListener('keydown', (event) => {
@@ -173,6 +119,8 @@ function activateKeyboard() {
 	});
 }
 
+
+// refactor me
 function activateUIHandlers() {
 	activatePenModes();
 	activateKeyboard();
@@ -195,49 +143,6 @@ function activateUIHandlers() {
 function clearCanvas(){
 	updateCanvasSize();
 	invertColors(false);
-}
-
-const penModeSelections = [
-	['#flatSelect', setFlat],
-	['#dotSelect', setDot],
-	['#fanSelect', setFan],
-	['#circleSelect', setCircle]
-]
-
-/* refactor me */
-/* BEGIN PEN MODE ACTIVATORS */
-function setFlat() {
-	penMode = flat;
-	updatePenSize(80);
-	updatePenMode('flat');
-}
-
-function setCircle() {
-	penMode = circle;
-	updatePenSize(80);
-	updatePenMode('circle');
-}
-
-function setDot() {
-	penMode = dot;
-	updatePenSize(4);
-	updatePenMode('dot');
-}
-
-function setFan() {
-	penMode = fan;
-	updatePenSize(1);
-	updatePenMode('fan');
-}
-/* END PEN MODE ACTIVATORS */
-
-function activatePenModes(){
-	penModeSelections.forEach(([elementId, modeHandler]) => {
-		document.querySelector(elementId).addEventListener('change', (event) => {
-			event.preventDefault();
-			modeHandler();
-		});
-	});
 }
 
 function invertColors(invert=true) {
@@ -321,7 +226,6 @@ function handleTouchCancel(event) {
 	}
 }
 
-
 function handleMouseStart(event) {
 	if (penMode === dot | penMode === circle) { penMode(event); }
 	createMouseEntry(event);
@@ -339,4 +243,93 @@ function handleMouseEnd(event) {
 	penMode(event);
 	removeMouseEntry();
 	mouseActive = false;
+}
+
+function activatePenModes(){
+	penModeSelections.forEach(([elementId, modeHandler]) => {
+		document.querySelector(elementId).addEventListener('change', (event) => {
+			event.preventDefault();
+			modeHandler();
+		});
+	});
+}
+
+/* refactor me */
+/* BEGIN PEN MODE ACTIVATORS */
+function setFlat() {
+	penMode = flat;
+	updatePenSize(80);
+	updatePenMode('flat');
+}
+
+function setCircle() {
+	penMode = circle;
+	updatePenSize(80);
+	updatePenMode('circle');
+}
+
+function setDot() {
+	penMode = dot;
+	updatePenSize(4);
+	updatePenMode('dot');
+}
+
+function setFan() {
+	penMode = fan;
+	updatePenSize(1);
+	updatePenMode('fan');
+}
+/* END PEN MODE ACTIVATORS */
+
+function flat(event) {
+	ctx.beginPath();
+
+	const prev = getPreviousStroke(event);
+
+	ctx.moveTo(prev.pageX, prev.pageY);
+	
+	ctx.lineTo(event.pageX, event.pageY);
+
+	ctx.lineWidth = penSize;
+	ctx.strokeStyle = penColor;
+
+	ctx.stroke();
+}
+
+function fan(event) {
+	ctx.beginPath();
+
+	const prev = getPreviousStroke(event);
+
+	ctx.moveTo(prev.pageX, prev.pageY);
+	ctx.lineTo(event.pageX, event.pageY);
+
+	ctx.lineWidth = penSize;
+	ctx.strokeStyle = penColor;
+
+	ctx.stroke();
+}
+
+function dot(event) {
+	ctx.beginPath();
+
+	ctx.strokeStyle = penColor;
+	ctx.fillStyle = penColor;
+
+	ctx.arc(event.pageX, event.pageY, penSize, 0, 2 * Math.PI);
+	ctx.fill();
+}
+
+function circle(event) {
+	ctx.beginPath();
+
+	ctx.strokeStyle = penColor;
+	ctx.lineWidth = 1;
+
+	ctx.arc(event.pageX, event.pageY, penSize, 0, 2 * Math.PI);
+	ctx.stroke();
+}
+
+function clamp(value, min, max) {
+	return Math.min(Math.max(value, min), max)
 }
