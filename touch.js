@@ -7,13 +7,6 @@ const COLOR_STATE_SYMBOLS = {
 	[BG_COLOR]:'images/yang-yin.svg'
 }
 
-const penModeSelections = [
-	['#flatSelect', flat, 80],
-	['#dotSelect', dot, 4],
-	['#fanSelect', fan, 1],
-	['#circleSelect', circle, 80]
-]
-
 const strokeHistory = {};
 let penColor = FG_COLOR;
 let penSize = 4;
@@ -181,11 +174,6 @@ function handleMouseEnd(event) {
 
 function handleMouseWheel(event) {}
 
-function setFlat() {}
-function setCircle() {}
-function setDot() {}
-function setFan() {}
-
 const strokeEventHandlers = [
 	["mousedown", handleMouseStart],
 	["mousemove", handleMouseMove],
@@ -198,22 +186,25 @@ const strokeEventHandlers = [
 	["touchmove", handleTouchMove]
 ];
 
-const keyEventHandlers = [
-	['t', setFlat],
-	['f', setFan],
-	['d', setDot],
-	['c', setCircle],
-	['shift', invertColors]
-];
+const keyEventHandlers = {
+	't': setFlat,
+	'f': setFan,
+	'd': setDot,
+	'c': setCircle,
+	'Shift': invertColors,
+	'r': clearCanvas
+};
+
+function activateKeyboard() {
+	window.addEventListener('keydown', (event) => {
+		const keyHandler = keyEventHandlers[event.key];
+		if (keyHandler) { keyHandler(); }
+	});
+}
 
 function activateUIHandlers() {
-	penModeSelections.forEach(([elementId, penFunction, defaultPenSize]) => {
-		document.querySelector(elementId).addEventListener('change', (event) => {
-			event.preventDefault();
-			penMode = penFunction;
-			updatePenSize(defaultPenSize);
-		});
-	});
+	activatePenModes();
+	activateKeyboard();
 
 	document.querySelector("#penSizeSlider").addEventListener('input', (event) => {
 		event.preventDefault();
@@ -226,8 +217,52 @@ function activateUIHandlers() {
 
 	document.querySelector('#clear').addEventListener('click', (event) => {
 		event.preventDefault();
-		updateCanvasSize();
-		invertColors(false);
+		clearCanvas();
+	});
+}
+
+function clearCanvas(){
+	updateCanvasSize();
+	invertColors(false);
+}
+
+const penModeSelections = [
+	['#flatSelect', setFlat],
+	['#dotSelect', setDot],
+	['#fanSelect', setFan],
+	['#circleSelect', setCircle]
+]
+
+function setFlat() {
+	penMode = flat;
+	updatePenSize(80);
+	updatePenMode('flat');
+}
+
+function setCircle() {
+	penMode = circle;
+	updatePenSize(80);
+	updatePenMode('circle');
+}
+
+function setDot() {
+	penMode = dot;
+	updatePenSize(4);
+	updatePenMode('dot');
+}
+
+function setFan() {
+	penMode = fan;
+	updatePenSize(1);
+	updatePenMode('fan');
+}
+
+function activatePenModes(){
+	penModeSelections.forEach(([elementId, modeHandler]) => {
+		document.querySelector(elementId).addEventListener('change', (event) => {
+			event.preventDefault();
+			modeHandler();
+		});
 	});
 }
 
@@ -241,6 +276,10 @@ function invertColors(invert=true) {
 function updatePenSize(val) {
 	penSize = (val > 0) ? val : 1;
 	document.querySelector('#penSizeSlider').value = penSize;
+}
+
+function updatePenMode(newModeName) {
+	document.querySelector(`#${newModeName}Select`).checked = true;
 }
 
 // currently this clears the canvas during resize
