@@ -1,20 +1,20 @@
 /*
-    Scratchpad
-    A mildly esoteric drawing webapp meant to enable exploration of artistic expression in geometric ways.
-    Copyright (C) 2023 Korey Ray
+		Scratchpad
+		A mildly esoteric drawing webapp meant to enable exploration of artistic expression in geometric ways.
+		Copyright (C) 2023 Korey Ray
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+		This program is free software: you can redistribute it and/or modify
+		it under the terms of the GNU General Public License as published by
+		the Free Software Foundation, either version 3 of the License, or
+		(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+		This program is distributed in the hope that it will be useful,
+		but WITHOUT ANY WARRANTY; without even the implied warranty of
+		MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+		GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+		You should have received a copy of the GNU General Public License
+		along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 const debug = false;
@@ -38,7 +38,7 @@ const strokeEventHandlers = [
 	["mousemove", handleMouseMove],
 	["mouseup", handleMouseEnd],
 	["wheel", handleMouseWheel],
-	
+
 	["touchstart", handleTouchStart],
 	["touchend", handleTouchEnd],
 	["touchcancel", handleTouchCancel],
@@ -104,62 +104,62 @@ function displayOutputBounds() {
 		const y = outputBounds.minY;
 		const width = outputBounds.maxX - x;
 		const height = outputBounds.maxY - y;
-		
+
 		console.log(`display bounds: x=${x.toFixed(0)} y=${y.toFixed(0)} w=${width.toFixed(0)} h=${height.toFixed(0)}`);
-		
+
 		const ctxBackupColor = penColor;
 		const ctxBackupLine = penSize;
-		
+
 		ctx.strokeStyle = "darkred";
 		ctx.lineWidth = 1;
-		
+
 		// ctx.strokeRect(x,y,width,height);
 		ctx.strokeRect(outputBounds.minX,outputBounds.minY, width, height);
-		
+
 		ctx.strokeStyle = ctxBackupColor;
 		ctx.lineWidth = ctxBackupLine;
 	}
 }
 
 function downloadCanvasImageCropped() {
-  const x = outputBounds.minX;
+	const x = outputBounds.minX;
 	const y = outputBounds.minY;
 	const width = outputBounds.maxX - x;
 	const height = outputBounds.maxY - y;
-  
-  const outputCanvas = document.createElement('canvas');
-  outputCanvas.width = width;
-  outputCanvas.height = height;
-  
-  const outputCtx = outputCanvas.getContext('2d');
-  
-  outputCtx.fillStyle = BG_COLOR;
-  outputCtx.fillRect(0, 0, width, height);
-  outputCtx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
-    
-  return outputCanvas.toDataURL();
+
+	const outputCanvas = document.createElement('canvas');
+	outputCanvas.width = width;
+	outputCanvas.height = height;
+
+	const outputCtx = outputCanvas.getContext('2d');
+
+	outputCtx.fillStyle = BG_COLOR;
+	outputCtx.fillRect(0, 0, width, height);
+	outputCtx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
+
+	return outputCanvas.toDataURL();
 }
 
-function getPreviousStroke(stroke){
+function getPreviousStroke(stroke) {
 	try {
 		if (stroke instanceof MouseEvent) { return strokeHistory['mouse']; }
 		else { return strokeHistory[stroke.identifier]; }
 	} catch { console.warn("getPreviousStroke didn't find anything"); }
 }
 
-function removeTouchEntry(event){
+function removeTouchEntry(event) {
 	strokeHistory[event.identifier] = null;
 }
 
-function createTouchEntry(touch){
+function createTouchEntry(touch) {
 	strokeHistory[touch.identifier] = extractPageXY(touch);
 }
 
-function createMouseEntry(mouseEvent){
+function createMouseEntry(mouseEvent) {
 	strokeHistory['mouse'] = extractPageXY(mouseEvent);
 }
 
-function removeMouseEntry(){
+function removeMouseEntry() {
 	strokeHistory['mouse'] = null;
 }
 
@@ -167,7 +167,7 @@ function extractPageXY(something) {
 	return { pageX:something.pageX, pageY:something.pageY };
 }
 
-function activateDebugHandlers(){
+function activateDebugHandlers() {
 	window.onbeforeunload = function() {
 		return 'Page reloading';
 	}
@@ -201,13 +201,13 @@ function activateUIHandlers() {
 		event.preventDefault();
 		clearCanvas();
 	});
-	
+
 	document.querySelector('#download').addEventListener('click', (event) => {
 		event.target.href = downloadCanvasImageCropped();
 	})
 }
 
-function clearCanvas(){
+function clearCanvas() {
 	updateCanvasSize();
 	invertColors(false);
 	resetOutputBounds();
@@ -263,7 +263,7 @@ function startStroke(event) {
 	}
 }
 
-function continueStroke(event){
+function continueStroke(event) {
 	penMode(event);
 	updateOutputBounds(event);
 }
@@ -278,7 +278,7 @@ function handleTouchStart(event) {
 
 	for (let i = 0; i < touches.length; i++) {
 		const touch = touches[i];		
-		
+
 		startStroke(touch);
 		createTouchEntry(touch);
 	}
@@ -289,7 +289,7 @@ function handleTouchMove(event) {
 
 	for (let i = 0; i < touches.length; i++) {
 		const touch = touches[i];
-		
+
 		continueStroke(touch);
 		if (penMode !== fan) { createTouchEntry(touch); } 
 	}
@@ -319,7 +319,7 @@ function handleTouchCancel(event) {
 function handleMouseStart(event) {
 	if (debug) { console.log(`${event.pageX}, ${event.pageY}, ${penSize}`); }
 	startStroke(event);
-	
+
 	createMouseEntry(event);
 	mouseActive = true;
 }
@@ -327,19 +327,19 @@ function handleMouseStart(event) {
 function handleMouseMove(event) {
 	if (mouseActive) {
 		continueStroke(event);
-		
+
 		if (penMode !== fan) { createMouseEntry(event); }
 	}
 }
 
 function handleMouseEnd(event) {
 	endStroke(event);
-	
+
 	removeMouseEntry();
 	mouseActive = false;
 }
 
-function activatePenModes(){
+function activatePenModes() {
 	penModeSelections.forEach(([elementId, modeHandler]) => {
 		document.querySelector(elementId).addEventListener('change', (event) => {
 			event.preventDefault();
@@ -381,7 +381,7 @@ function flat(event) {
 	const prev = getPreviousStroke(event);
 
 	ctx.moveTo(prev.pageX, prev.pageY);
-	
+
 	ctx.lineTo(event.pageX, event.pageY);
 
 	ctx.lineWidth = penSize;
