@@ -17,7 +17,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-const debug = true;
+const debug = false;
 
 const FG_COLOR = "#000";
 const BG_COLOR = "#666";
@@ -52,7 +52,6 @@ const keyEventHandlers = {
 	'c': setCircle,
 	'Shift': invertColors,
 	'r': clearCanvas,
-	'p': displayDownloadLinks,
 	'x': displayOutputBounds
 };
 
@@ -101,10 +100,10 @@ function resetOutputBounds() {
 
 function displayOutputBounds() {
 	if (debug) {
-		const x = (outputBounds.minX < 0) ? 0 : outputBounds.minX;
-		const y = (outputBounds.minY < 0) ? 0 : outputBounds.minY;
-		const width = (outputBounds.maxX > canvas.width) ? canvas.width : outputBounds.maxX - x;
-		const height = (outputBounds.maxY > canvas.height) ? canvas.height : outputBounds.maxY - y;
+		const x = outputBounds.minX;
+		const y = outputBounds.minY;
+		const width = outputBounds.maxX - x;
+		const height = outputBounds.maxY - y;
 		
 		console.log(`display bounds: x=${x.toFixed(0)} y=${y.toFixed(0)} w=${width.toFixed(0)} h=${height.toFixed(0)}`);
 		
@@ -114,16 +113,31 @@ function displayOutputBounds() {
 		ctx.strokeStyle = "darkred";
 		ctx.lineWidth = 1;
 		
-		ctx.strokeRect(x,y,width,height);
+		// ctx.strokeRect(x,y,width,height);
+		ctx.strokeRect(outputBounds.minX,outputBounds.minY, width, height);
 		
 		ctx.strokeStyle = ctxBackupColor;
 		ctx.lineWidth = ctxBackupLine;
 	}
 }
 
-// TODO
-function displayDownloadLinks() {
-	const transparent = canvas.toDataURL();
+function downloadCanvasImageCropped() {
+  const x = outputBounds.minX;
+	const y = outputBounds.minY;
+	const width = outputBounds.maxX - x;
+	const height = outputBounds.maxY - y;
+  
+  const outputCanvas = document.createElement('canvas');
+  outputCanvas.width = width;
+  outputCanvas.height = height;
+  
+  const outputCtx = outputCanvas.getContext('2d');
+  
+  outputCtx.fillStyle = BG_COLOR;
+  outputCtx.fillRect(0, 0, width, height);
+  outputCtx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
+    
+  return outputCanvas.toDataURL();
 }
 
 function getPreviousStroke(stroke){
@@ -187,6 +201,10 @@ function activateUIHandlers() {
 		event.preventDefault();
 		clearCanvas();
 	});
+	
+	document.querySelector('#download').addEventListener('click', (event) => {
+		event.target.href = downloadCanvasImageCropped();
+	})
 }
 
 function clearCanvas(){
