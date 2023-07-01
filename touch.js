@@ -63,6 +63,7 @@ let penMode = dot;
 let mouseActive = false;
 
 const vvp = window.visualViewport;
+const windowBounds = {width:vvp.width, height:vvp.height};
 const canvas = document.querySelector('#canvas');
 const ctx = canvas.getContext('2d');
 
@@ -80,8 +81,11 @@ const outputBounds = {
 	maxY: -Infinity
 };
 
-function updateOutputBounds(dx, dy, r) {
-	console.log(`new bound options: dx ${dx} dy ${dy} r ${r}`);
+function updateOutputBounds(event) {
+	const dx = event.pageX;
+	const dy = event.pageY;
+	const r = (penMode === flat) ? .5*penSize + 5 : penSize + 5;
+
 	outputBounds.minX = Math.min(outputBounds.minX, dx - r);
 	outputBounds.minY = Math.min(outputBounds.minY, dy - r);
 	outputBounds.maxX = Math.max(outputBounds.maxX, dx + r);
@@ -182,13 +186,13 @@ function activateUIHandlers() {
 	document.querySelector('#clear').addEventListener('click', (event) => {
 		event.preventDefault();
 		clearCanvas();
-		resetOutputBounds();
 	});
 }
 
 function clearCanvas(){
 	updateCanvasSize();
 	invertColors(false);
+	resetOutputBounds();
 }
 
 function invertColors(invert=true) {
@@ -212,11 +216,17 @@ function updatePenMode(newModeName) {
 function updateCanvasSize() {
 	canvas.setAttribute('width', vvp.width);
 	canvas.setAttribute('height', vvp.height);
+	windowBounds.width = vvp.width;
+	windowBounds.height = vvp.height;
 }
 
 function activateViewportHandler() {
 	updateCanvasSize();
-	vvp.addEventListener("resize", updateCanvasSize);
+	vvp.addEventListener("resize", () => {
+		if (vvp.height !== windowBounds.height & vvp.width !== windowBounds.width) { 
+			updateCanvasSize(); 
+		}
+	});
 }
 
 function activateStrokeHandlers() {
@@ -228,14 +238,30 @@ function activateStrokeHandlers() {
 	});
 }
 
+function startStroke(event) {
+	if (penMode === dot | penMode === circle) { 
+		penMode(event); 
+		updateOutputBounds(event);
+	}
+}
+
+function continueStroke(event){
+	penMode(event);
+	updateOutputBounds(event);
+}
+
+function endStroke(event) {
+	penMode(event);
+	updateOutputBounds(event);
+}
+
 function handleTouchStart(event) {
 	const touches = event.changedTouches;
 
 	for (let i = 0; i < touches.length; i++) {
-		const touch = touches[i];
-
-		if (penMode === dot | penMode === circle) { penMode(touch); }
-
+		const touch = touches[i];		
+		
+		startStroke(touch);
 		createTouchEntry(touch);
 	}
 }
@@ -245,9 +271,9 @@ function handleTouchMove(event) {
 
 	for (let i = 0; i < touches.length; i++) {
 		const touch = touches[i];
-		penMode(touch);
-
-		if (penMode !== fan) { createTouchEntry(touch); }
+		
+		continueStroke(touch);
+		if (penMode !== fan) { createTouchEntry(touch); } 
 	}
 }
 
@@ -257,7 +283,7 @@ function handleTouchEnd(event) {
 	for (let i = 0; i < touches.length; i++) {
 		const touch = touches[i];
 
-		penMode(touch);
+		endStroke(touch);
 		removeTouchEntry(touch);
 	}
 }
@@ -273,21 +299,24 @@ function handleTouchCancel(event) {
 }
 
 function handleMouseStart(event) {
-	console.log(`${event.pageX}, ${event.pageY}, ${penSize}`);
-	if (penMode === dot | penMode === circle) { penMode(event); }
+	if (debug) { console.log(`${event.pageX}, ${event.pageY}, ${penSize}`); }
+	startStroke(event);
+	
 	createMouseEntry(event);
 	mouseActive = true;
 }
 
 function handleMouseMove(event) {
 	if (mouseActive) {
-		penMode(event);
+		continueStroke(event);
+		
 		if (penMode !== fan) { createMouseEntry(event); }
 	}
 }
 
 function handleMouseEnd(event) {
-	penMode(event);
+	endStroke(event);
+	
 	removeMouseEntry();
 	mouseActive = false;
 }
@@ -341,7 +370,6 @@ function flat(event) {
 	ctx.strokeStyle = penColor;
 
 	ctx.stroke();
-	updateOutputBounds(event.pageX, event.pageY, .5*penSize + 5);
 }
 
 function fan(event) {
@@ -356,7 +384,6 @@ function fan(event) {
 	ctx.strokeStyle = penColor;
 
 	ctx.stroke();
-	updateOutputBounds(event.pageX, event.pageY, penSize + 5);
 }
 
 function dot(event) {
@@ -367,7 +394,6 @@ function dot(event) {
 
 	ctx.arc(event.pageX, event.pageY, penSize, 0, 2 * Math.PI);
 	ctx.fill();
-	updateOutputBounds(event.pageX, event.pageY, penSize + 5);
 }
 
 function circle(event) {
@@ -378,7 +404,6 @@ function circle(event) {
 
 	ctx.arc(event.pageX, event.pageY, penSize, 0, 2 * Math.PI);
 	ctx.stroke();
-	updateOutputBounds(event.pageX, event.pageY, penSize + 5);
 }
 
 function clamp(value, min, max) {
