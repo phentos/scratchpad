@@ -17,7 +17,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-const debug = false;
+const debug = true;
 
 const FG_COLOR = "#000";
 const BG_COLOR = "#666";
@@ -52,7 +52,8 @@ const keyEventHandlers = {
 	'c': setCircle,
 	'Shift': invertColors,
 	'r': clearCanvas,
-	'p': displayDownloadLinks
+	'p': displayDownloadLinks,
+	'x': displayOutputBounds
 };
 
 const strokeHistory = {};
@@ -70,6 +71,51 @@ document.addEventListener("DOMContentLoaded", () => {
 	activateUIHandlers();
 	activateViewportHandler();
 });
+
+// left, top, right, bottom
+const outputBounds = {
+	minX: Infinity,
+	minY: Infinity,
+	maxX: -Infinity,
+	maxY: -Infinity
+};
+
+function updateOutputBounds(dx, dy, r) {
+	console.log(`new bound options: dx ${dx} dy ${dy} r ${r}`);
+	outputBounds.minX = Math.min(outputBounds.minX, dx - r);
+	outputBounds.minY = Math.min(outputBounds.minY, dy - r);
+	outputBounds.maxX = Math.max(outputBounds.maxX, dx + r);
+	outputBounds.maxY = Math.max(outputBounds.maxY, dy + r);
+}
+
+function resetOutputBounds() {
+	outputBounds.minX = Infinity;
+	outputBounds.minY = Infinity;
+	outputBounds.maxX = -Infinity;
+	outputBounds.maxY = -Infinity;
+}
+
+function displayOutputBounds() {
+	if (debug) {
+		const x = (outputBounds.minX < 0) ? 0 : outputBounds.minX;
+		const y = (outputBounds.minY < 0) ? 0 : outputBounds.minY;
+		const width = (outputBounds.maxX > canvas.width) ? canvas.width : outputBounds.maxX - x;
+		const height = (outputBounds.maxY > canvas.height) ? canvas.height : outputBounds.maxY - y;
+		
+		console.log(`display bounds: x=${x.toFixed(0)} y=${y.toFixed(0)} w=${width.toFixed(0)} h=${height.toFixed(0)}`);
+		
+		const ctxBackupColor = penColor;
+		const ctxBackupLine = penSize;
+		
+		ctx.strokeStyle = "darkred";
+		ctx.lineWidth = 1;
+		
+		ctx.strokeRect(x,y,width,height);
+		
+		ctx.strokeStyle = ctxBackupColor;
+		ctx.lineWidth = ctxBackupLine;
+	}
+}
 
 // TODO
 function displayDownloadLinks() {
@@ -119,7 +165,6 @@ function activateKeyboard() {
 	});
 }
 
-
 // refactor me
 function activateUIHandlers() {
 	activatePenModes();
@@ -127,7 +172,7 @@ function activateUIHandlers() {
 
 	document.querySelector("#penSizeSlider").addEventListener('input', (event) => {
 		event.preventDefault();
-		updatePenSize(event.target.value);
+		updatePenSize(Number(event.target.value));
 	});
 
 	document.querySelector("#invert").addEventListener('click', () => {
@@ -137,6 +182,7 @@ function activateUIHandlers() {
 	document.querySelector('#clear').addEventListener('click', (event) => {
 		event.preventDefault();
 		clearCanvas();
+		resetOutputBounds();
 	});
 }
 
@@ -227,6 +273,7 @@ function handleTouchCancel(event) {
 }
 
 function handleMouseStart(event) {
+	console.log(`${event.pageX}, ${event.pageY}, ${penSize}`);
 	if (penMode === dot | penMode === circle) { penMode(event); }
 	createMouseEntry(event);
 	mouseActive = true;
@@ -294,6 +341,7 @@ function flat(event) {
 	ctx.strokeStyle = penColor;
 
 	ctx.stroke();
+	updateOutputBounds(event.pageX, event.pageY, .5*penSize + 5);
 }
 
 function fan(event) {
@@ -308,6 +356,7 @@ function fan(event) {
 	ctx.strokeStyle = penColor;
 
 	ctx.stroke();
+	updateOutputBounds(event.pageX, event.pageY, penSize + 5);
 }
 
 function dot(event) {
@@ -318,6 +367,7 @@ function dot(event) {
 
 	ctx.arc(event.pageX, event.pageY, penSize, 0, 2 * Math.PI);
 	ctx.fill();
+	updateOutputBounds(event.pageX, event.pageY, penSize + 5);
 }
 
 function circle(event) {
@@ -328,8 +378,9 @@ function circle(event) {
 
 	ctx.arc(event.pageX, event.pageY, penSize, 0, 2 * Math.PI);
 	ctx.stroke();
+	updateOutputBounds(event.pageX, event.pageY, penSize + 5);
 }
 
 function clamp(value, min, max) {
-	return Math.min(Math.max(value, min), max)
+	return Math.min(Math.max(value, min), max);
 }
