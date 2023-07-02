@@ -205,6 +205,8 @@ function activateUIHandlers() {
 	document.querySelector('#download').addEventListener('click', (event) => {
 		event.target.href = downloadCanvasImageCropped();
 	})
+	
+	window.addEventListener('contextmenu', (event) => { event.preventDefault(); });
 }
 
 function clearCanvas() {
