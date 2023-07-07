@@ -81,3 +81,7 @@ a {
     border-radius: 2px;
     transition-duration: 0.4s;	
 }
+
+#mutator {
+	border: solid 2px #FFF;
+}

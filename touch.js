@@ -17,7 +17,7 @@
 		along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-const debug = false;
+const debug = true;
 
 const FG_COLOR = "#000";
 const BG_COLOR = "#666";
@@ -32,6 +32,20 @@ const penModeSelections = [
 	['#fanSelect', setFan],
 	['#circleSelect', setCircle]
 ];
+
+/*
+flat: penSize, dashes??
+dot: penSize(radius), offset randomness?
+circle: penSize(radius), wobbliness?
+fan: ??, gradientness??
+*/
+
+const penModeMutations = {
+	[flat]:null,
+	[dot]:null,
+	[circle]:null,
+	[fan]:null
+};
 
 const strokeEventHandlers = [
 	["mousedown", handleMouseStart],
@@ -63,14 +77,26 @@ let mouseActive = false;
 
 const vvp = window.visualViewport;
 const windowBounds = {width:vvp.width, height:vvp.height};
-const canvas = document.querySelector('#canvas');
-const ctx = canvas.getContext('2d');
+
+let canvas;
+let ctx;
+let mutator;
+let mutatorCtx;
 
 document.addEventListener("DOMContentLoaded", () => {	
+	activateCanvasHandlers();
 	activateStrokeHandlers();
 	activateUIHandlers();
-	activateViewportHandler();
+	activateViewportHandler();	
 });
+
+function activateCanvasHandlers() {
+	canvas = document.querySelector('#canvas');
+	ctx = canvas.getContext('2d');
+
+	mutator = document.querySelector('#mutator');
+	mutatorCtx = mutator.getContext('2d');
+}
 
 // left, top, right, bottom
 const outputBounds = {
@@ -79,6 +105,29 @@ const outputBounds = {
 	maxX: -Infinity,
 	maxY: -Infinity
 };
+
+function getElementInputPosition(e) {
+	const elementBounds = e.target.getBoundingClientRect();
+	const inputX = e.clientX - elementBounds.left;
+	const inputY = e.clientY - elementBounds.top;
+
+	return {x: inputX, y:inputY};
+}
+
+function updateMutator(e) {
+	const inputPosition = getElementInputPosition(e);
+
+	mutatePenProperties(inputPosition);
+	paintMutator(inputPosition);            
+}
+
+function mutatePenProperties(xyValues) {
+	if (debug) { console.log(`mutate pen with: ${Object.entries(xyValues)}`); }
+}
+
+function paintMutator(xyValues) {
+	if (debug) { console.log(`mutate with ${Object.entries(xyValues)}`); }
+}
 
 function updateOutputBounds(event) {
 	const dx = event.pageX;
@@ -187,6 +236,7 @@ function activateKeyboard() {
 function activateUIHandlers() {
 	activatePenModes();
 	activateKeyboard();
+	activateMutator();
 
 	document.querySelector("#penSizeSlider").addEventListener('input', (event) => {
 		event.preventDefault();
@@ -205,7 +255,7 @@ function activateUIHandlers() {
 	document.querySelector('#download').addEventListener('click', (event) => {
 		event.target.href = downloadCanvasImageCropped();
 	})
-	
+
 	window.addEventListener('contextmenu', (event) => { event.preventDefault(); });
 }
 
@@ -347,6 +397,21 @@ function activatePenModes() {
 			event.preventDefault();
 			modeHandler();
 		});
+	});
+}
+
+function activateMutator() {
+	mutator.addEventListener('mousedown', (e) => {
+		updateMutator(e);
+		mouseActive = true;
+	});
+
+	mutator.addEventListener('mousemove', (e) => {
+		if (mouseActive) { updateMutator(e); }
+	});
+
+	mutator.addEventListener('mouseup', (e) => {
+		mouseActive = false;
 	});
 }
 
