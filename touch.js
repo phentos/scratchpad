@@ -19,12 +19,29 @@
 
 const debug = false;
 
-const FG_COLOR = "#000";
 const BG_COLOR = "#666";
-const COLOR_STATE_SYMBOLS = {
-	[FG_COLOR]:'images/yin-yang.svg',
-	[BG_COLOR]:'images/yang-yin.svg'
+const FG_COLOR = "#000";
+
+let inversionActive = false;
+
+const INVERSION_STATE_SYMBOLS = {
+	false:'images/yin-yang.svg',
+	true:'images/yang-yin.svg'
 };
+
+const INVERSION_STATE_COMPOSITORS = {
+	false: 'source-over',
+	true: 'destination-out'
+}
+
+function toggleInversion(reset=false) {
+	const invertElement = document.querySelector('#invert');
+
+	inversionActive = (reset) ? false : !inversionActive;
+
+	ctx.globalCompositeOperation = INVERSION_STATE_COMPOSITORS[inversionActive];
+	invertElement.src = INVERSION_STATE_SYMBOLS[inversionActive];
+}
 
 const penModeSelections = [
 	['#flatSelect', setFlat],
@@ -50,13 +67,13 @@ const keyEventHandlers = {
 	'f': setFan,
 	'd': setDot,
 	'c': setCircle,
-	'Shift': invertColors,
+	'Shift': toggleInversion,
 	'r': clearCanvas,
 	'x': displayOutputBounds
 };
 
 const strokeHistory = {};
-let penColor = FG_COLOR;
+const penColor = FG_COLOR;
 let penSize = 4;
 let penMode = dot;
 let mouseActive = false;
@@ -133,8 +150,11 @@ function downloadCanvasImageCropped() {
 
 	const outputCtx = outputCanvas.getContext('2d');
 
-	outputCtx.fillStyle = BG_COLOR;
-	outputCtx.fillRect(0, 0, width, height);
+	if (!inversionActive) {
+		outputCtx.fillStyle = BG_COLOR;
+		outputCtx.fillRect(0, 0, width, height);	
+	}
+	
 	outputCtx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
 
 	return outputCanvas.toDataURL();
@@ -194,7 +214,7 @@ function activateUIHandlers() {
 	});
 
 	document.querySelector("#invert").addEventListener('click', () => {
-		invertColors();
+		toggleInversion();
 	})
 
 	document.querySelector('#clear').addEventListener('click', (event) => {
@@ -211,15 +231,8 @@ function activateUIHandlers() {
 
 function clearCanvas() {
 	updateCanvasSize();
-	invertColors(false);
+	toggleInversion(true);
 	resetOutputBounds();
-}
-
-function invertColors(invert=true) {
-	const invertElement = document.querySelector('#invert');
-
-	penColor = (!invert) ? FG_COLOR : (penColor === BG_COLOR) ? FG_COLOR : BG_COLOR;	
-	invertElement.src = COLOR_STATE_SYMBOLS[penColor];
 }
 
 function updatePenSize(val) {
