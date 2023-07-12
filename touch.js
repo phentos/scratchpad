@@ -50,20 +50,6 @@ const penModeSelections = [
 	['#circleSelect', setCircle]
 ];
 
-/*
-flat: penSize, dashes??
-dot: penSize(radius), offset randomness?
-circle: penSize(radius), wobbliness?
-fan: ??, gradientness??
-*/
-
-const penModeMutations = {
-	[flat]:null,
-	[dot]:null,
-	[circle]:null,
-	[fan]:null
-};
-
 const strokeEventHandlers = [
 	["mousedown", handleMouseStart],
 	["mousemove", handleMouseMove],
@@ -136,10 +122,6 @@ function updateMutator(e) {
 
 	mutatePenProperties(inputPosition);
 	paintMutator(inputPosition);            
-}
-
-function mutatePenProperties(xyValues) {
-	if (debug) { console.log(`mutate pen with: ${Object.entries(xyValues)}`); }
 }
 
 function paintMutator(xyValues) {
@@ -454,6 +436,28 @@ function setFan() {
 	updatePenMode('fan');
 }
 /* END PEN MODE ACTIVATORS */
+
+/*
+flat: penSize(width), dashes
+dot: penSize(radius), random offset magnitude
+circle: penSize(radius), dashes
+fan: start/end point random offset magnitude, dashes
+*/
+
+let randomOffsetMagnitude = 0;
+let dashPattern;
+
+function mutatePenProperties(xyValues) {
+	if (debug) { console.log(`mutate pen with: ${Object.entries(xyValues)}`); }
+}
+
+function offsetRandom(magnitude) {
+	let offsetProduct = Math.random();
+	
+	if (Math.random() > 0.5) { offsetProduct = offsetProduct - 1;}
+	
+	return Math.random() * magnitude;
+}
 
 function flat(event) {
 	ctx.beginPath();
