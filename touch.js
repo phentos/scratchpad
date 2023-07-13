@@ -109,29 +109,29 @@ const outputBounds = {
 	maxY: -Infinity
 };
 
-function getElementInputPosition(e) {
+function positionToPortion(e) {
 	const elementBounds = e.target.getBoundingClientRect();
-	const inputX = e.clientX - elementBounds.left;
-	const inputY = e.clientY - elementBounds.top;
+	const xShare = (e.clientX - elementBounds.left) / elementBounds.left;
+	const yShare = (e.clientY - elementBounds.top) / elementBounds.top;
 
-	return {x: inputX, y:inputY};
+	return {x: xShare, y: yShare};
 }
 
 function updateMutator(e) {
-	const inputPosition = getElementInputPosition(e);
+	const mutateShares = positionToPortion(e);
 
-	mutatePenProperties(inputPosition);
-	paintMutator(inputPosition);            
+	mutatePenProperties(mutateShares);
+	paintMutator();
 }
 
-function paintMutator(xyValues) {
-	if (debug) { console.log(`mutate with ${Object.entries(xyValues)}`); }
+function paintMutator() {
+	if (debug) { console.log("painted mutator"); }
 }
 
 function updateOutputBounds(event) {
 	const dx = event.pageX;
 	const dy = event.pageY;
-	const r = (penMode === flat) ? .5*penSize + 5 : penSize + 5;
+	const r = (penMode === flat) ? .5 * penSize + 5 : penSize + 5;
 
 	outputBounds.minX = Math.min(outputBounds.minX, dx - r);
 	outputBounds.minY = Math.min(outputBounds.minY, dy - r);
@@ -454,10 +454,12 @@ function mutatePenProperties(xyValues) {
 function offsetRandom(magnitude) {
 	let offsetProduct = Math.random();
 	
-	if (Math.random() > 0.5) { offsetProduct = offsetProduct - 1;}
+	if (Math.random() > 0.5) { offsetProduct = offsetProduct - 1; }
 	
-	return Math.random() * magnitude;
+	return offsetProduct * magnitude;
 }
+
+
 
 function flat(event) {
 	ctx.beginPath();
@@ -510,4 +512,3 @@ function circle(event) {
 
 function clamp(value, min, max) {
 	return Math.min(Math.max(value, min), max);
-}
